@@ -43,7 +43,7 @@ fi
 
 if [ "${INCLUDE_ALL_LOGS:-false}" = true ]; then
   [ -f /opt/log/access.log.1 ] || touch /opt/log/access.log.1
-  /sbin/tini -s -- zcat /opt/log/access.log.*.gz | goaccess - /opt/log/access.log /opt/log/access.log.1 --output /config/html/index.html --real-time-html --log-format=COMBINED --port 7890 --config-file=/config/goaccess.conf --ws-url ws://localhost:7890/ws
+  /sbin/tini -s -- zcat /opt/log/access.log.*.gz | goaccess - /opt/log/access.log /opt/log/access.log.1 --output /config/html/index.html --real-time-html --port 7890 --config-file=/config/goaccess.conf --ws-url ws://localhost:7890/ws
 else
-  /sbin/tini -s -- goaccess - /opt/log/access.log --output /config/html/index.html --real-time-html --log-format=COMBINED --port 7890 --config-file=/config/goaccess.conf --ws-url ws://localhost:7890/ws
+  /sbin/tini -s -- goaccess - /opt/log/access.log --output /config/html/index.html --real-time-html --port 7890 --config-file=/config/goaccess.conf --ws-url ws://localhost:7890/ws
 fi
