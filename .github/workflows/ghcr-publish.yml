@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ov3rk1ll/docker-goaccess
+
 jobs:
   build-and-push-to-ghcr:
     runs-on: ubuntu-latest
@@ -21,8 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.1.1
 
-      - name: Log into GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
@@ -45,8 +53,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:amd64
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:amd64_commit-${{ steps.short-sha.outputs.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64_commit-${{ steps.short-sha.outputs.sha }}
           platforms: linux/amd64
           build-args: |
             OVERLAY_ARCH=amd64
@@ -59,8 +67,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:arm64
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:arm64_commit-${{ steps.short-sha.outputs.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64_commit-${{ steps.short-sha.outputs.sha }}
           platforms: linux/arm64
           build-args: |
             OVERLAY_ARCH=aarch64
@@ -73,8 +81,8 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:armv7
-            ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:armv7_commit-${{ steps.short-sha.outputs.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:armv7
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:armv7_commit-${{ steps.short-sha.outputs.sha }}
           platforms: linux/arm/v7
           build-args: |
             OVERLAY_ARCH=arm
@@ -82,8 +90,8 @@ jobs:
       - name: Create and push manifest images
         uses: Noelware/docker-manifest-action@master
         with:
-          inputs: ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:latest
-          images: ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:amd64,ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:arm64,ghcr.io/${{ secrets.GIT_USER }}/docker-goaccess:armv7
+          inputs: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:armv7
           push: true
 
       - name: ntfy success notifications
@@ -95,9 +103,9 @@ jobs:
           tags: github,action,+1,partying_face
           priority: 4
           image: true
-          actions: 'default'
-          details: 'Workflow has been completed successfully!'
-          headers: '${{ secrets.NTFY_HEADERS }}'
+          actions: "default"
+          details: "Workflow has been completed successfully!"
+          headers: "${{ secrets.NTFY_HEADERS }}"
 
       - name: ntfy failed notifications
         uses: niniyas/ntfy-action@master
@@ -108,9 +116,9 @@ jobs:
           tags: github,action,failed,rotating_light
           priority: 5
           image: true
-          actions: 'default'
-          details: 'Workflow has failed!'
-          headers: '${{ secrets.NTFY_HEADERS }}'
+          actions: "default"
+          details: "Workflow has failed!"
+          headers: "${{ secrets.NTFY_HEADERS }}"
 
       - name: ntfy cancelled notifications
         uses: niniyas/ntfy-action@master
@@ -119,7 +127,7 @@ jobs:
           url: ${{ secrets.NTFY_URL }}
           topic: ${{ secrets.NTFY_TOPIC }}
           tags: github,action,cancelled,skull
-          details: 'Workflow has been cancelled!'
-          headers: '${{ secrets.NTFY_HEADERS }}'
+          details: "Workflow has been cancelled!"
+          headers: "${{ secrets.NTFY_HEADERS }}"
           image: true
-          actions: 'default'
+          actions: "default"
